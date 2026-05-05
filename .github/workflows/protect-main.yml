@@ -1,0 +1,16 @@
+name: "Enforce Branch Source"
+on:
+  pull_request:
+    branches:
+      - main
+      
+jobs:
+  check_source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify source branch
+        run: |
+          if [[ "${{ github.head_ref }}" != "develop" ]]; then
+            echo "ERROR: 'main' is protected - you can only merge from 'develop' branch."
+            exit 1
+          fi
