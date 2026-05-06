@@ -219,3 +219,4 @@ __marimo__/
 
 data/*
 notebooks/run_config/*
+.vscode/*
