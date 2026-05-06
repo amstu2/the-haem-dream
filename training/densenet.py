@@ -50,10 +50,15 @@ def train_func(config):
 
     model.train()
     for epoch in range(config["epochs"]):
-        for inputs, labels in train_loader:
+        for batch in dataloader:
+            classes = batch["class"]
+            images = batch["image"] / 255.0
+            images = images.permute(0, 3, 1, 2) 
+            images = transformations(images) 
+            
             optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            outputs = model(images)
+            loss = criterion(outputs, classes)
             loss.backward()
             optimizer.step()
         
