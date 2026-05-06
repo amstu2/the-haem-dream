@@ -24,12 +24,14 @@ train_ds.schema()
 def train_func(config):
     data_shard = ray.train.get_dataset_shard("train")
 
-    transformations = transforms.Compose[
-        transforms.ToTensor(),
-        transforms.RandomVerticalFlip(p=0.5),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2),
-    ]
+    transformations = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        ]
+    )
 
     data_shard.map_batches(transformations)
 
