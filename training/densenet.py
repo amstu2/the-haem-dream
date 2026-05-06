@@ -49,6 +49,7 @@ def train_func(config):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
+    checkpoint_dir = "checkpoints"
 
     model.train()
     for epoch in range(config["epochs"]):
@@ -58,10 +59,11 @@ def train_func(config):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-        checkpoint_dir = "checkpoints"
-    torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
-    checkpoint = Checkpoint.from_directory(checkpoint_dir)
-    train.report(metrics={"loss": loss}, checkpoint=checkpoint)
+        
+        if epoch % 10 == 0:
+            torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
+            checkpoint = Checkpoint.from_directory(checkpoint_dir)
+            ray.train.report(metrics={"loss": loss}, checkpoint=checkpoint)
 
 
 run_config_path = str(pathlib.Path("run_config/").absolute())
