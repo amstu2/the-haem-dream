@@ -37,7 +37,7 @@ def train_func(config):
     )
 
     dataloader = data_shard.iter_torch_batches(
-        batch_size=16, dtypes={"image": torch.uint8, "class": torch.int64}
+        batch_size=config["batch_size"], dtypes={"image": torch.uint8, "class": torch.int64}
     )
 
     model = densenet121(weights=None)
@@ -72,6 +72,7 @@ trainer = TorchTrainer(
     run_config=RunConfig(storage_path=run_config_path),
     train_loop_config={
         "lr": 1e-3,
+        "batch_size": 16,
         "input_features": (368 * 368 * 3),
         "num_classes": 13,
         "epochs": 200,
