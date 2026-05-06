@@ -3,11 +3,9 @@ import torch.nn as nn
 from torchvision import transforms
 from torchvision.models import densenet121
 import ray
-from ray.train import ScalingConfig, RunConfig
-from ray.train import Checkpoint
+from ray.train import ScalingConfig, RunConfig, Checkpoint
 from ray.train.torch import TorchTrainer
 import pathlib
-import numpy as np
 from ray.data.datasource.partitioning import Partitioning
 from ray.data.preprocessors import LabelEncoder
 
@@ -19,7 +17,6 @@ ray.init()
 train_root = pbc_base_path / "train"
 partitioning = Partitioning("dir", field_names=["class"], base_dir=train_root)
 train_ds = ray.data.read_images(train_root, size=(368, 368), partitioning=partitioning)
-train_ds.schema()
 
 encoder = LabelEncoder(label_column="class")
 train_ds = encoder.fit_transform(train_ds)
