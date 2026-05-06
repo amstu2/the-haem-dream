@@ -38,7 +38,7 @@ def train_func(config):
     )
 
     model = densenet121(weights=None)
-    model.classifier = nn.Linear(config["input_features"], config["num_classes"])
+    model.classifier = nn.Linear(model.classifier.in_features, config["num_classes"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
@@ -77,7 +77,6 @@ trainer = TorchTrainer(
     train_loop_config={
         "lr": 1e-3,
         "batch_size": 16,
-        "input_features": (368 * 368 * 3),
         "num_classes": 13,
         "epochs": 200,
     },
