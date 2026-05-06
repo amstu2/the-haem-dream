@@ -45,7 +45,7 @@ def train_func(config):
     model = ray.train.torch.prepare_model(model)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
+    optimizer = torch.optim.AdamW(model.parameters(), lr=config["lr"])
     checkpoint_dir = "checkpoints"
 
     model.train()
