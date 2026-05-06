@@ -79,3 +79,5 @@ trainer = TorchTrainer(
     },
 )
 result = trainer.fit()
+
+ray.shutdown()
