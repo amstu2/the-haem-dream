@@ -43,7 +43,7 @@ env:
   PROJECT_NUMBER: 891878746379
   GAR_LOCATION: 'us-central1' # TODO: update to your region
   GKE_CLUSTER: 'the-haem-dream' # TODO: update to your cluster name
-  GKE_ZONE: 'us-central1-c' # TODO: update to your cluster zone
+  GKE_ZONE: 'us-central1' # TODO: update to your cluster zone
   DEPLOYMENT_NAME: 'gke-test' # TODO: update to your deployment name
   REPOSITORY: 'samples' # TODO: update to your Artifact Registry docker repository name
   IMAGE: 'streamlit-ui'
