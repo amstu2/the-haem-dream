@@ -36,10 +36,10 @@ name: 'Build and Deploy to GKE'
 on:
   push:
     branches:
-      - '"develop"'
+      - develop
 
 env:
-  PROJECT_ID: 'the-haem-dream' # TODO: update to your Google Cloud project ID
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   PROJECT_NUMBER: 891878746379
   GAR_LOCATION: 'us-central1' # TODO: update to your region
   GKE_CLUSTER: 'the-haem-dream' # TODO: update to your cluster name
