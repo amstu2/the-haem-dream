@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "your_app.py", "--server.port", "8501"]
+CMD ["streamlit", "run", "streamlit.py", "--server.port", "8501"]
