@@ -41,11 +41,11 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   PROJECT_NUMBER: 891878746379
-  GAR_LOCATION: 'us-central1' # TODO: update to your region
-  GKE_CLUSTER: 'the-haem-dream' # TODO: update to your cluster name
-  GKE_ZONE: 'us-central1' # TODO: update to your cluster zone
-  DEPLOYMENT_NAME: 'gke-test' # TODO: update to your deployment name
-  REPOSITORY: 'samples' # TODO: update to your Artifact Registry docker repository name
+  GAR_LOCATION: 'us-central1'
+  GKE_CLUSTER: 'the-haem-dream'
+  GKE_ZONE: 'us-central1'
+  DEPLOYMENT_NAME: 'streamlit-ui'
+  REPOSITORY: 'haem-artifacts'
   IMAGE: 'streamlit-ui'
   WORKLOAD_IDENTITY_PROVIDER: 'projects/891878746379/locations/global/workloadIdentityPools/my-pool/providers/github-actions-oidc' # TODO: update to your workload identity provider
 
