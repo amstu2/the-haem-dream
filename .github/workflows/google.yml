@@ -104,18 +104,12 @@ jobs:
 
           docker push "${DOCKER_TAG}"
 
-      # Set up kustomize
-      - name: 'Set up Kustomize'
-        run: |-
-          curl -sfLo kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.3/kustomize_v5.4.3_linux_amd64.tar.gz
-          tar -xzf kustomize.tar.gz
-          chmod u+x ./kustomize
-
       # Deploy the Docker image to the GKE cluster
       - name: 'Deploy to GKE'
         run: |-
-          # replacing the image name in the k8s template
-          ./kustomize edit set image LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA
-          ./kustomize build . | kubectl apply -f -
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
-          kubectl get services -o wide
+          # Update the image in the deployment
+          kubectl set image deployment/streamlit-ui \
+            streamlit-ui=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA \
+            -n prod
+          kubectl rollout status deployment/streamlit-ui -n prod
+          kubectl get services -o wide -n prod
