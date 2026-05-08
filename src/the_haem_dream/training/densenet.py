@@ -29,9 +29,7 @@ train_ds = ray.data.read_images(train_root, size=(368, 368), partitioning=partit
 encoder = LabelEncoder(label_column="class")
 train_ds = encoder.fit_transform(train_ds)
 
-
-
-def train_func(config):
+def train_func(config:
     data_shard = ray.train.get_dataset_shard("train")
 
     transformations = transforms.Compose(
