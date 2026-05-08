@@ -54,7 +54,7 @@ train_ds = ray.data.read_images(
     train_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=train_partitioning
 )
 test_ds = ray.data.read_images(
-    test_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=partitioning
+    test_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=test_partitioning
 )
 
 encoder = LabelEncoder(label_column="class")
