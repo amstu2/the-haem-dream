@@ -46,7 +46,9 @@ def train_func(config):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=config["lr"])
-    checkpoint_dir = "checkpoints"
+
+    checkpoint_dir = pathlib.Path("./checkpoints/")
+    checkpoint_dir.mkdir(exist_ok=True)
 
     model.train()
     for epoch in range(config["epochs"]):
