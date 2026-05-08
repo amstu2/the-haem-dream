@@ -5,6 +5,7 @@ from pathlib import Path
 import mlflow
 import ray
 import torch
+import torch.distributed as dist
 import torch.nn as nn
 from ray.data.datasource.partitioning import Partitioning
 from ray.data.preprocessors import LabelEncoder
@@ -46,16 +47,22 @@ unzip_file(Path("./pbc_dataset.zip"), Path("./"))
 
 pbc_base_path = Path("./dataset/").resolve()
 train_root = pbc_base_path / "train"
-train_root = pbc_base_path / "train"
-partitioning = Partitioning("dir", field_names=["class"], base_dir=train_root)
+test_root = pbc_base_path / "test"
+train_partitioning = Partitioning("dir", field_names=["class"], base_dir=train_root)
+test_partitioning = Partitioning("dir", field_names=["class"], base_dir=test_root)
 train_ds = ray.data.read_images(
-    train_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=partitioning
+    train_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=train_partitioning
+)
+test_ds = ray.data.read_images(
+    test_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=partitioning
 )
 
 encoder = LabelEncoder(label_column="class")
 train_ds = encoder.fit_transform(train_ds)
-if TRUNCATE_DATASET:
-    train_ds = train_ds.limit(100)  # For debugging
+test_ds = encoder.fit_transform(test_ds)
+if TRUNCATE_DATASET:  # For debugging
+    train_ds = train_ds.limit(100)
+    test_ds = test_ds.limit(10)
 
 
 def train_func(config):
@@ -65,10 +72,14 @@ def train_func(config):
         mlflow.start_run()
         mlflow.log_params(config)
 
-    data_shard = ray.train.get_dataset_shard("train")
+    train_data_shard = ray.train.get_dataset_shard("train")
+    test_data_shard = ray.train.get_dataset_shard("train")
 
     random.seed(config["seed"])
     torch.manual_seed(config["seed"])
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device {'cuda' if torch.cuda.is_available() else 'cpu'}")
 
     transformations = transforms.Compose(
         [
@@ -81,14 +92,20 @@ def train_func(config):
         ]
     )
 
-    dataloader = data_shard.iter_torch_batches(
+    train_dataloader = train_data_shard.iter_torch_batches(
         batch_size=config["batch_size"],
         dtypes={"image": torch.uint8, "class": torch.int64},
+        device=device,
+    )
+
+    test_dataloader = test_data_shard.iter_torch_batches(
+        batch_size=config["batch_size"],
+        dtypes={"image": torch.uint8, "class": torch.int64},
+        device=device,
     )
 
     model = densenet121(weights=None)
     model.classifier = nn.Linear(model.classifier.in_features, config["num_classes"])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
     model = ray.train.torch.prepare_model(model)
@@ -101,7 +118,7 @@ def train_func(config):
 
     model.train()
     for epoch in range(config["epochs"]):
-        for batch in dataloader:
+        for batch in train_dataloader:
             classes = batch["class"]
             images = batch["image"] / 255.0
             images = images.permute(0, 3, 1, 2)
@@ -125,14 +142,50 @@ def train_func(config):
         ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
         if ray.train.get_context().get_world_rank() == 0:
             mlflow.log_metrics({"loss": loss.item()}, step=epoch)
-            mlflow.end_run()
+
+    model.eval()
+    tp = torch.zeros(config["num_classes"]).to(device)
+    fp = torch.zeros(config["num_classes"]).to(device)
+    fn = torch.zeros(config["num_classes"]).to(device)
+    correct = torch.tensor(0.0).to(device)
+    total = torch.tensor(0.0).to(device)
+
+    with torch.no_grad():
+        for batch in test_dataloader:
+            classes = batch["class"]
+            images = batch["image"] / 255.0
+            images = images.permute(0, 3, 1, 2)
+
+            outputs = model(images).argmax(1)
+
+            for c in range(config["num_classes"]):
+                tp[c] += ((outputs == c) & (classes == c)).sum()
+                fp[c] += ((outputs == c) & (classes != c)).sum()
+                fn[c] += ((outputs != c) & (classes == c)).sum()
+
+            correct += (outputs == classes).sum()
+            total += classes.size(0)
+
+    dist.all_reduce(tp, op=dist.ReduceOp.SUM)
+    dist.all_reduce(fp, op=dist.ReduceOp.SUM)
+    dist.all_reduce(fn, op=dist.ReduceOp.SUM)
+    dist.all_reduce(correct, op=dist.ReduceOp.SUM)
+    dist.all_reduce(total, op=dist.ReduceOp.SUM)
+
+    if ray.train.get_context().get_world_rank() == 0:
+        EPSILON = 1e-8
+        per_class_f1 = 2 * tp / (2 * tp + fp + fn + EPSILON)
+        macro_f1 = per_class_f1.mean().item()
+        accuracy = (correct / total).item()
+        ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
+        mlflow.end_run()
 
 
 run_config_path = str(Path("run_config/").absolute())
 trainer = TorchTrainer(
     train_func,
-    datasets={"train": train_ds},
-    scaling_config=ScalingConfig(num_workers=4, use_gpu=False),
+    datasets={"train": train_ds, "test": test_ds},
+    scaling_config=ScalingConfig(num_workers=2, use_gpu=False),
     run_config=RunConfig(storage_path=run_config_path),
     train_loop_config={
         "lr": TRAIN_LEARNING_RATE,
