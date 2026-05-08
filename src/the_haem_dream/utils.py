@@ -1,6 +1,17 @@
 import zipfile
 from pathlib import Path
 
+import requests
+
+
+def mlflow_server_alive(tracking_uri: str):
+    res = requests.get(tracking_uri + "/version")
+    if res.status_code == 200:
+        return True
+    else:
+        print(f"No mlflow server response! Content: {res.content}")
+        return False
+
 
 def download_gcs_file(
     bucket_name: str, source_blob_name: str, destination_file_path: str

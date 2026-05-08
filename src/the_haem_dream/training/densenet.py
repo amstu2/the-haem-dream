@@ -1,6 +1,8 @@
 import os
+import sys
 from pathlib import Path
 
+import mlflow
 import ray
 import torch
 import torch.nn as nn
@@ -11,9 +13,20 @@ from ray.train.torch import TorchTrainer
 from torchvision import transforms
 from torchvision.models import densenet121
 
-from the_haem_dream.utils import download_gcs_file, unzip_file
+from the_haem_dream.utils import download_gcs_file, mlflow_server_alive, unzip_file
+
+MLFLOW_TRACKING_URI = os.environ["MLFLOW_TRACKING_URI"]
+TRAIN_LEARNING_RATE = os.environ["TRAIN_LEARNING_RATE"]
+BATCH_SIZE = os.environ["BATCH_SIZE"]
+EPOCHS = os.environ["EPOCHS"]
 
 ray.init()
+
+mlflow.set_experiment("cell-detection")
+mlflow_server_uri = os.environ["MLFLOW_TRACKING_URI"]
+if not mlflow_server_alive(mlflow_server_uri):
+    print(f"Can't connect to mlflow server ({mlflow_server_uri}- ending...")
+    sys.exit(1)
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
     Path("C:\\Users\\andre\\Downloads\\the-haem-dream-246d90e23cca.json")
@@ -88,19 +101,20 @@ def train_func(config):
         ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
 
 
-run_config_path = str(Path("run_config/").absolute())
-trainer = TorchTrainer(
-    train_func,
-    datasets={"train": train_ds.limit(50)},
-    scaling_config=ScalingConfig(num_workers=1, use_gpu=False),
-    run_config=RunConfig(storage_path=run_config_path),
-    train_loop_config={
-        "lr": 1e-3,
-        "batch_size": 16,
-        "num_classes": 13,
-        "epochs": 10,
-    },
-)
-result = trainer.fit()
+with mlflow.start_run():
+    run_config_path = str(Path("run_config/").absolute())
+    trainer = TorchTrainer(
+        train_func,
+        datasets={"train": train_ds},
+        scaling_config=ScalingConfig(num_workers=1, use_gpu=False),
+        run_config=RunConfig(storage_path=run_config_path),
+        train_loop_config={
+            "lr": TRAIN_LEARNING_RATE,
+            "batch_size": BATCH_SIZE,
+            "num_classes": 13,
+            "epochs": EPOCHS,
+        },
+    )
+    result = trainer.fit()
 
 ray.shutdown()
