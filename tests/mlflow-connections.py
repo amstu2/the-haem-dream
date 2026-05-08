@@ -1,6 +1,6 @@
 import mlflow
 
-MLFLOW_TRACKING_URI = "http://mlflow.mlflow.svc.cluster.local:5000"
+mlflow.set_tracking_uri("http://mlflow.mlflow.svc.cluster.local:5000")
 
 experiment_name = "tests"
 with mlflow.start_run():
