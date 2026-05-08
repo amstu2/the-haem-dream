@@ -4,15 +4,10 @@ version = "0.1.0"
 description = "A cloud-native project for detecting anamolous cells in a blood film."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "albumentations>=2.0.8",
-    "fastapi>=0.136.1",
-    "google-cloud-storage>=3.10.1",
-    "mlflow-skinny>=3.12.0",
-    "pandas>=2.3.3",
-    "ray[data,serve,train]>=2.55.1",
-    "streamlit>=1.57.0",
-    "torch>=2.11.0",
-    "torchvision>=0.26.0",
-    "uvicorn>=0.46.0",
-]
+
+[project.optional-dependencies]
+ui = ["streamlit>=1.57.0", "fastapi>=0.136.1", "uvicorn>=0.46.0"]
+training = ["torch>=2.11.0", "torchvision>=0.26.0", "ray[data,train]>=2.55.1", "google-cloud-storage", "fsspec[full]"]
+
+[tool.uv]
+package = true
