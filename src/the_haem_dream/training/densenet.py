@@ -35,12 +35,6 @@ if not mlflow_server_alive(MLFLOW_TRACKING_URI):
 
 ray.init()
 
-mlflow.set_experiment("cell-detection")
-mlflow_server_uri = os.environ["MLFLOW_TRACKING_URI"]
-if not mlflow_server_alive(mlflow_server_uri):
-    print(f"Can't connect to mlflow server ({mlflow_server_uri}- ending...")
-    sys.exit(1)
-
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
     Path("C:\\Users\\andre\\Downloads\\the-haem-dream-246d90e23cca.json")
 )
@@ -65,6 +59,12 @@ if TRUNCATE_DATASET:
 
 
 def train_func(config):
+    if ray.train.get_context().get_world_rank() == 0:
+        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+        mlflow.set_experiment("cell-detection")
+        mlflow.start_run()
+        mlflow.log_params(config)
+
     data_shard = ray.train.get_dataset_shard("train")
 
     random.seed(config["seed"])
@@ -117,10 +117,14 @@ def train_func(config):
             torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
             checkpoint = Checkpoint.from_directory(checkpoint_dir)
             ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
+            if ray.train.get_context().get_world_rank() == 0:
+                mlflow.log_metrics(metrics, step=epoch)
 
         torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
         checkpoint = Checkpoint.from_directory(checkpoint_dir)
         ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
+        if ray.train.get_context().get_world_rank() == 0:
+            mlflow.log_metrics(metrics, step=epoch)
 
 
 with mlflow.start_run():
