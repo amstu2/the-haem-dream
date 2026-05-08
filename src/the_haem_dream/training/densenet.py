@@ -118,13 +118,14 @@ def train_func(config):
             checkpoint = Checkpoint.from_directory(checkpoint_dir)
             ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
             if ray.train.get_context().get_world_rank() == 0:
-                mlflow.log_metrics(metrics, step=epoch)
+                mlflow.log_metrics({"loss": loss.item()}, step=epoch)
 
         torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
         checkpoint = Checkpoint.from_directory(checkpoint_dir)
         ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
         if ray.train.get_context().get_world_rank() == 0:
-            mlflow.log_metrics(metrics, step=epoch)
+            mlflow.log_metrics({"loss": loss.item()}, step=epoch)
+            mlflow.end_run()
 
 
 with mlflow.start_run():
