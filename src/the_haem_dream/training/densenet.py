@@ -128,25 +128,24 @@ def train_func(config):
             mlflow.end_run()
 
 
-with mlflow.start_run():
-    run_config_path = str(Path("run_config/").absolute())
-    trainer = TorchTrainer(
-        train_func,
-        datasets={"train": train_ds},
-        scaling_config=ScalingConfig(num_workers=1, use_gpu=False),
-        run_config=RunConfig(storage_path=run_config_path),
-        train_loop_config={
-            "lr": TRAIN_LEARNING_RATE,
-            "batch_size": BATCH_SIZE,
-            "num_classes": 13,
-            "epochs": EPOCHS,
-            "seed": SEED,
-            "prob_vert_flip": PROBABILITY_VERT_FLIP,
-            "prob_hori_flip": PROBABILITY_HORI_FLIP,
-            "prob_brightness": PROBABILITY_BRIGHTNESS,
-            "prob_contrast": PROBABILITY_CONTRAST,
-        },
-    )
-    result = trainer.fit()
+run_config_path = str(Path("run_config/").absolute())
+trainer = TorchTrainer(
+    train_func,
+    datasets={"train": train_ds},
+    scaling_config=ScalingConfig(num_workers=4, use_gpu=False),
+    run_config=RunConfig(storage_path=run_config_path),
+    train_loop_config={
+        "lr": TRAIN_LEARNING_RATE,
+        "batch_size": BATCH_SIZE,
+        "num_classes": 13,
+        "epochs": EPOCHS,
+        "seed": SEED,
+        "prob_vert_flip": PROBABILITY_VERT_FLIP,
+        "prob_hori_flip": PROBABILITY_HORI_FLIP,
+        "prob_brightness": PROBABILITY_BRIGHTNESS,
+        "prob_contrast": PROBABILITY_CONTRAST,
+    },
+)
+result = trainer.fit()
 
 ray.shutdown()
