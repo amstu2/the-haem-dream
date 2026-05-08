@@ -1,5 +1,5 @@
 import os
-import sys
+import random
 from pathlib import Path
 
 import mlflow
@@ -28,6 +28,10 @@ PROBABILITY_CONTRAST = float(os.getenv("PROBABILITY_CONTRAST", 0.2))
 SEED = int(os.getenv("TRAIN_SEED", 42))
 TRUNCATE_DATASET = bool(os.getenv("TRUNCATE_DATASET", False))
 
+if not mlflow_server_alive(MLFLOW_TRACKING_URI):
+    raise ConnectionError(
+        f"Can't connect to mlflow server ({MLFLOW_TRACKING_URI}- ending..."
+    )
 
 ray.init()
 
@@ -56,6 +60,8 @@ train_ds = ray.data.read_images(
 
 encoder = LabelEncoder(label_column="class")
 train_ds = encoder.fit_transform(train_ds)
+if TRUNCATE_DATASET:
+    train_ds = train_ds.limit(100)  # For debugging
 
 
 def train_func(config):
