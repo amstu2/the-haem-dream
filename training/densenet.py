@@ -67,7 +67,11 @@ def train_func(config):
         if epoch % 10 == 0:
             torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
             checkpoint = Checkpoint.from_directory(checkpoint_dir)
-            ray.train.report(metrics={"loss": loss}, checkpoint=checkpoint)
+            ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
+
+        torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
+        checkpoint = Checkpoint.from_directory(checkpoint_dir)
+        ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
 
 
 run_config_path = str(pathlib.Path("run_config/").absolute())
