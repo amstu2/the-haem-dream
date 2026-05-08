@@ -130,19 +130,21 @@ def train_func(config):
             loss.backward()
             optimizer.step()
 
-        if ray.train.get_context().get_world_rank() == 0:
-            if epoch % 10 == 0:
+        checkpoint = None
+        if epoch % 10 == 0:
+            if ray.train.get_context().get_world_rank() == 0:
                 torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
-                ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
-                if ray.train.get_context().get_world_rank() == 0:
-                    mlflow.log_metrics({"loss": loss.item()}, step=epoch)
+                mlflow.log_metrics({"loss": loss.item()}, step=epoch)
 
+            ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
+
+        if ray.train.get_context().get_world_rank() == 0:
             torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
             checkpoint = Checkpoint.from_directory(checkpoint_dir)
-            ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
-            if ray.train.get_context().get_world_rank() == 0:
-                mlflow.log_metrics({"loss": loss.item()}, step=epoch)
+            mlflow.log_metrics({"loss": loss.item()}, step=epoch)
+
+        ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
 
     model.eval()
     tp = torch.zeros(config["num_classes"]).to(device)
