@@ -16,9 +16,18 @@ from torchvision.models import densenet121
 from the_haem_dream.utils import download_gcs_file, mlflow_server_alive, unzip_file
 
 MLFLOW_TRACKING_URI = os.environ["MLFLOW_TRACKING_URI"]
-TRAIN_LEARNING_RATE = os.environ["TRAIN_LEARNING_RATE"]
-BATCH_SIZE = os.environ["BATCH_SIZE"]
-EPOCHS = os.environ["EPOCHS"]
+TRAIN_LEARNING_RATE = float(os.environ["TRAIN_LEARNING_RATE"])
+BATCH_SIZE = int(os.environ["BATCH_SIZE"])
+EPOCHS = int(os.environ["EPOCHS"])
+
+IMG_LENGTH = int(os.getenv("IMG_LENGTH", 368))
+PROBABILITY_VERT_FLIP = float(os.getenv("PROBABILITY_VERT_FLIP", 0.5))
+PROBABILITY_HORI_FLIP = float(os.getenv("PROBABILITY_HORI_FLIP", 0.5))
+PROBABILITY_BRIGHTNESS = float(os.getenv("PROBABILITY_BRIGHTNESS", 0.2))
+PROBABILITY_CONTRAST = float(os.getenv("PROBABILITY_CONTRAST", 0.2))
+SEED = int(os.getenv("TRAIN_SEED", 42))
+TRUNCATE_DATASET = bool(os.getenv("TRUNCATE_DATASET", False))
+
 
 ray.init()
 
@@ -41,7 +50,9 @@ pbc_base_path = Path("./dataset/").resolve()
 train_root = pbc_base_path / "train"
 train_root = pbc_base_path / "train"
 partitioning = Partitioning("dir", field_names=["class"], base_dir=train_root)
-train_ds = ray.data.read_images(train_root, size=(368, 368), partitioning=partitioning)
+train_ds = ray.data.read_images(
+    train_root, size=(IMG_LENGTH, IMG_LENGTH), partitioning=partitioning
+)
 
 encoder = LabelEncoder(label_column="class")
 train_ds = encoder.fit_transform(train_ds)
@@ -50,12 +61,17 @@ train_ds = encoder.fit_transform(train_ds)
 def train_func(config):
     data_shard = ray.train.get_dataset_shard("train")
 
+    random.seed(config["seed"])
+    torch.manual_seed(config["seed"])
+
     transformations = transforms.Compose(
         [
             # transforms.ToTensor(),
-            transforms.RandomVerticalFlip(p=0.5),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2),
+            transforms.RandomVerticalFlip(p=config["prob_vert_flip"]),
+            transforms.RandomHorizontalFlip(p=config["prob_hori_flip"]),
+            transforms.ColorJitter(
+                brightness=config["prob_brightness"], contrast=config["prob_contrast"]
+            ),
         ]
     )
 
@@ -113,6 +129,11 @@ with mlflow.start_run():
             "batch_size": BATCH_SIZE,
             "num_classes": 13,
             "epochs": EPOCHS,
+            "seed": SEED,
+            "prob_vert_flip": PROBABILITY_VERT_FLIP,
+            "prob_hori_flip": PROBABILITY_HORI_FLIP,
+            "prob_brightness": PROBABILITY_BRIGHTNESS,
+            "prob_contrast": PROBABILITY_CONTRAST,
         },
     )
     result = trainer.fit()
