@@ -1,0 +1,6 @@
+ray[serve]
+mlflow-skinny
+starlette
+torchvision
+torch
+fsspec[full]
