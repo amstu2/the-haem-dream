@@ -138,8 +138,8 @@ def train_func(config):
             if ray.train.get_context().get_world_rank() == 0:
                 torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
-                mlflow.log_metrics({"loss": epoch_loss}, step=epoch)
-
+        if ray.train.get_context().get_world_rank() == 0:
+            mlflow.log_metrics({"loss": epoch_loss}, step=epoch)
         ray.train.report(metrics={"loss": epoch_loss}, checkpoint=checkpoint)
 
     model.eval()
@@ -187,7 +187,7 @@ run_config_path = str(Path("run_config/").absolute())
 trainer = TorchTrainer(
     train_func,
     datasets={"train": train_ds, "test": test_ds},
-    scaling_config=ScalingConfig(num_workers=2, use_gpu=False),
+    scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=TRAIN_USE_GPU),
     run_config=RunConfig(storage_path=run_config_path),
     train_loop_config={
         "lr": TRAIN_LEARNING_RATE,
