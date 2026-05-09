@@ -1,0 +1,58 @@
+# kubectl apply -f train-manifest.yaml -n ray-train
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: rayjob-cell-densenet
+spec:
+  entrypoint: uv run python -m the_haem_dream.training.densenet
+  shutdownAfterJobFinishes: true
+  rayClusterSpec:
+    rayVersion: "2.46.0"
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+      template:        
+        spec:
+          serviceAccountName: ray-ksa
+          containers:
+            - name: ray-head
+              image: us-central1-docker.pkg.dev/the-haem-dream/haem-artifacts/cell-train@sha256:2233c0aa0741c2e49f024c3a3b761f5340bbfb10c808c8e2b8de2690b5a66f51
+              env:
+                  - name: MLFLOW_TRACKING_URI
+                    value: "http://mlflow.mlflow.svc.cluster.local:5000"
+                  - name: BATCH_SIZE
+                    value: "16"
+                  - name: EPOCHS
+                    value: "50"
+                  - name: TRAIN_LEARNING_RATE
+                    value: "0.001"
+                  - name: TRUNCATE_DATASET
+                    value: "True"                  
+              resources:
+                requests: {cpu: "1", memory: "2Gi"}
+    workerGroupSpecs:
+      - replicas: 1
+        minReplicas: 1
+        maxReplicas: 1
+        groupName: training-workers
+        template:
+          spec:
+            serviceAccountName: ray-ksa
+            containers:
+              - name: ray-worker
+                image: us-central1-docker.pkg.dev/the-haem-dream/haem-artifacts/cell-train@sha256:2233c0aa0741c2e49f024c3a3b761f5340bbfb10c808c8e2b8de2690b5a66f51
+                resources:
+                  requests: {cpu: "4", memory: "8Gi"}
+                # resources:
+                #   requests:
+                #     nvidia.com/gpu: 1
+                #   limits:
+                #     nvidia.com/gpu: 1
+            # nodeSelector:
+            #   cloud.google.com/compute-class: Accelerator
+            #   cloud.google.com/gke-accelerator: nvidia-l4
+            # tolerations:
+            #   - key: "nvidia.com/gpu"
+            #     operator: "Exists"
+            #     effect: "NoSchedule"
+                          
