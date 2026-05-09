@@ -5,9 +5,13 @@ description = "A cloud-native project for detecting anamolous cells in a blood f
 readme = "README.md"
 requires-python = ">=3.10"
 
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project.optional-dependencies]
 ui = ["streamlit", "fastapi", "uvicorn"]
-training = ["torch", "torchvision", "ray[data,train]", "google-cloud-storage", "fsspec[full]", "mlflow-skinny", "setuptools"]
+training = ["torch", "torchvision", "ray[data,train]", "google-cloud-storage", "fsspec[full]", "mlflow-skinny"]
 
 [tool.uv]
 package = true
