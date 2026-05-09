@@ -1,5 +1,7 @@
 FROM rayproject/ray:2.46.0-py311-gpu
 
+USER root
+
 WORKDIR /app
 
 COPY . .
