@@ -31,7 +31,7 @@
 #
 # 5. Change the values in the "env" block to match your values.
 
-name: 'Build and Deploy to GKE'
+name: 'Build and Deploy UI'
 
 on:
   push:
