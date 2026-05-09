@@ -1,0 +1,9 @@
+FROM rayproject/ray:2.46.0-py311-gpu
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install uv && uv sync --no-cache --extra training
+
+CMD ["uv", "run", "python", "-m", "the_haem_dream.training.densenet"]
