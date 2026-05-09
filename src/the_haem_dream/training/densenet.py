@@ -73,7 +73,7 @@ def train_func(config):
         mlflow.log_params(config)
 
     train_data_shard = ray.train.get_dataset_shard("train")
-    test_data_shard = ray.train.get_dataset_shard("train")
+    test_data_shard = ray.train.get_dataset_shard("test")
 
     random.seed(config["seed"])
     torch.manual_seed(config["seed"])
