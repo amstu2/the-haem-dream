@@ -132,14 +132,15 @@ def train_func(config):
             optimizer.step()
 
         checkpoint = None
-        if epoch % 10 == 0 and loss.item() < best_loss:
-            best_loss = loss.item()
+        epoch_loss = loss.item()
+        if epoch_loss < best_loss:
+            best_loss = epoch_loss
             if ray.train.get_context().get_world_rank() == 0:
                 torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
-                mlflow.log_metrics({"loss": loss.item()}, step=epoch)
+                mlflow.log_metrics({"loss": epoch_loss}, step=epoch)
 
-        ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
+        ray.train.report(metrics={"loss": epoch_loss}, checkpoint=checkpoint)
 
     model.eval()
     tp = torch.zeros(config["num_classes"]).to(device)
