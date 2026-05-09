@@ -1,0 +1,6 @@
+torch
+torchvision
+ray[data,train]
+google-cloud-storage
+fsspec[full]
+mlflow-skinny

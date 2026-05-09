@@ -13,8 +13,7 @@ from ray.train import Checkpoint, RunConfig, ScalingConfig
 from ray.train.torch import TorchTrainer
 from torchvision import transforms
 from torchvision.models import densenet121
-
-from the_haem_dream.utils import download_gcs_file, mlflow_server_alive, unzip_file
+from utils import download_gcs_file, mlflow_server_alive, unzip_file
 
 MLFLOW_TRACKING_URI = os.environ["MLFLOW_TRACKING_URI"]
 TRAIN_LEARNING_RATE = float(os.environ["TRAIN_LEARNING_RATE"])
