@@ -175,13 +175,16 @@ def train_func(config):
     dist.all_reduce(correct, op=dist.ReduceOp.SUM)
     dist.all_reduce(total, op=dist.ReduceOp.SUM)
 
+    accuracy = 0
+    macro_f1 = 0
     if ray.train.get_context().get_world_rank() == 0:
         EPSILON = 1e-8
         per_class_f1 = 2 * tp / (2 * tp + fp + fn + EPSILON)
         macro_f1 = per_class_f1.mean().item()
         accuracy = (correct / total).item()
-        ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
+        mlflow.log_metrics({"accuracy": accuracy, "macro_f1": macro_f1})
         mlflow.end_run()
+    ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
 
 
 run_config_path = str(Path("run_config/").absolute())
