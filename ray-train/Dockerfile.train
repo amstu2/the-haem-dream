@@ -4,11 +4,11 @@ USER root
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ray-train/requirements.txt .
 COPY ray-train/densenet.py .
 COPY ray-train/utils.py .
+
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "densenet.py"]
