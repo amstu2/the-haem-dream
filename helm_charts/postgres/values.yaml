@@ -1,7 +1,7 @@
 # helm repo add bitnami https://charts.bitnami.com/bitnami
-# helm install postgres-db bitnami/postgresql -f postgres_values.yaml -n prod
 # kubectl create secret generic postgres-secret --from-literal=username=X --from-literal=password=X -from-literal=init.sql='CREATE USER X WITH PASSWORD '\''X'\''; CREATE DATABASE mlflow OWNER X;' -n mlflow
-# Probs need to add docker login - GKE rate limited
+# Probs need to add docker login as secret - GKE rate limited
+# helm install postgres-db bitnami/postgresql -f postgres_values.yaml -n mlflow
 
 image:
   registry: docker.io

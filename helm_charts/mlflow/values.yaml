@@ -1,0 +1,45 @@
+# helm repo add community-charts https://community-charts.github.io/helm-charts
+# helm repo update
+# helm install mlflow community-charts/mlflow -n mlflow -f mlflow_values.yaml
+
+serviceAccount:
+  create: false
+  name: default
+
+backendStore:
+  databaseMigration: true
+  databaseConnectionCheck: true
+  postgres:
+    enabled: true
+    host: postgres-db-postgresql.mlflow.svc.cluster.local
+    port: 5432
+    database: mlflow
+  existingDatabaseSecret:
+    name: "postgres-secret"
+    usernameKey: "username"
+    passwordKey: "password"
+
+artifactRoot:
+  gcs:
+    enabled: true
+    bucket: the-haem-dream
+    path: mlflow
+
+service:
+  type: LoadBalancer
+  port: 5000
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "2Gi"
+
+extraEnvVars:
+  MLFLOW_GCS_DEFAULT_TIMEOUT: "60"
+  MLFLOW_GCS_UPLOAD_CHUNK_SIZE: "104857600"
+  MLFLOW_GCS_DOWNLOAD_CHUNK_SIZE: "104857600"
+  MLFLOW_DEFAULT_ARTIFACT_ROOT: "gs://the-haem-dream/mlflow"
+  MLFLOW_SERVER_ALLOWED_HOSTS: "localhost:5000,mlflow.mlflow.svc.cluster.local:5000,127.0.0.1:5000"
