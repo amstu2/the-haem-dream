@@ -117,6 +117,7 @@ def train_func(config):
     checkpoint_dir.mkdir(exist_ok=True)
 
     model.train()
+    best_loss = 1e8
     for epoch in range(config["epochs"]):
         for batch in train_dataloader:
             classes = batch["class"]
@@ -131,18 +132,12 @@ def train_func(config):
             optimizer.step()
 
         checkpoint = None
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 and loss.item() < best_loss:
+            best_loss = loss.item()
             if ray.train.get_context().get_world_rank() == 0:
                 torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
                 mlflow.log_metrics({"loss": loss.item()}, step=epoch)
-
-            ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
-
-        if ray.train.get_context().get_world_rank() == 0:
-            torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
-            checkpoint = Checkpoint.from_directory(checkpoint_dir)
-            mlflow.log_metrics({"loss": loss.item()}, step=epoch)
 
         ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
 
