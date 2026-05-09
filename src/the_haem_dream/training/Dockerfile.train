@@ -6,6 +6,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir setuptools uv && uv sync --no-cache --extra training
+RUN pip install --no-cache-dir setuptools uv && uv sync --no-cache --no-build-isolation --extra training
 
 CMD ["uv", "run", "python", "-m", "the_haem_dream.training.densenet"]
