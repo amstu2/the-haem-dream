@@ -26,6 +26,8 @@ PROBABILITY_VERT_FLIP = float(os.getenv("PROBABILITY_VERT_FLIP", 0.5))
 PROBABILITY_HORI_FLIP = float(os.getenv("PROBABILITY_HORI_FLIP", 0.5))
 PROBABILITY_BRIGHTNESS = float(os.getenv("PROBABILITY_BRIGHTNESS", 0.2))
 PROBABILITY_CONTRAST = float(os.getenv("PROBABILITY_CONTRAST", 0.2))
+TRAIN_NUM_WORKERS = int(os.getenv("TRAIN_NUM_WORKERS", 2))
+TRAIN_USE_GPU = bool(os.getenv("TRAIN_USE_GPU", True))
 SEED = int(os.getenv("TRAIN_SEED", 42))
 TRUNCATE_DATASET = bool(os.getenv("TRUNCATE_DATASET", False))
 
@@ -33,12 +35,6 @@ if not mlflow_server_alive(MLFLOW_TRACKING_URI):
     raise ConnectionError(
         f"Can't connect to mlflow server ({MLFLOW_TRACKING_URI}- ending..."
     )
-
-ray.init()
-
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
-    Path("C:\\Users\\andre\\Downloads\\the-haem-dream-246d90e23cca.json")
-)
 
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_dataset.zip", "./pbc_dataset.zip")
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_meta.csv", "./pbc_meta.csv")
@@ -202,5 +198,3 @@ trainer = TorchTrainer(
     },
 )
 result = trainer.fit()
-
-ray.shutdown()
