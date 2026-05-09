@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 ui = ["streamlit", "fastapi", "uvicorn"]
-training = ["torch", "torchvision", "ray[data,train]", "google-cloud-storage", "fsspec[full]", "mlflow-skinny"]
+training = ["torch", "torchvision", "ray[data,train]", "google-cloud-storage", "fsspec[full]", "mlflow-skinny", "setuptools"]
 
 [tool.uv]
 package = true

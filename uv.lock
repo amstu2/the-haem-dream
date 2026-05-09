@@ -4053,6 +4053,7 @@ training = [
     { name = "google-cloud-storage" },
     { name = "mlflow-skinny" },
     { name = "ray", extra = ["data", "train"] },
+    { name = "setuptools" },
     { name = "torch" },
     { name = "torchvision" },
 ]
@@ -4069,6 +4070,7 @@ requires-dist = [
     { name = "google-cloud-storage", marker = "extra == 'training'" },
     { name = "mlflow-skinny", marker = "extra == 'training'" },
     { name = "ray", extras = ["data", "train"], marker = "extra == 'training'" },
+    { name = "setuptools", marker = "extra == 'training'" },
     { name = "streamlit", marker = "extra == 'ui'" },
     { name = "torch", marker = "extra == 'training'" },
     { name = "torchvision", marker = "extra == 'training'" },
