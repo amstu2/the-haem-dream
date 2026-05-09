@@ -61,8 +61,13 @@ if TRUNCATE_DATASET:  # For debugging
 
 
 def train_func(config):
+    # TODO: Switch to GCS native storage
+    download_gcs_file(
+        "the-haem-dream", "cell-dataset/pbc_dataset.zip", "./pbc_dataset.zip"
+    )
+    unzip_file(Path("./pbc_dataset.zip"), Path("./"))
     if ray.train.get_context().get_world_rank() == 0:
-        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+        mlflow.set_tracking_uri(config["mflow_server_uri"])
         mlflow.set_experiment("cell-detection")
         mlflow.start_run()
         mlflow.log_params(config)
@@ -186,6 +191,7 @@ trainer = TorchTrainer(
     scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=TRAIN_USE_GPU),
     run_config=RunConfig(storage_path=run_config_path),
     train_loop_config={
+        "mflow_server_uri": MLFLOW_TRACKING_URI,
         "lr": TRAIN_LEARNING_RATE,
         "batch_size": BATCH_SIZE,
         "num_classes": 13,
