@@ -36,7 +36,7 @@ name: 'Build Ray Train Image'
 on:
   push:
     paths:
-      - 'src/the_haem_dream/training/**'
+      - 'ray-train/**'
       - 'pyproject.toml'
 
 env:
