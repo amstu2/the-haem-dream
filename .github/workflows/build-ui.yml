@@ -35,8 +35,9 @@ name: 'Build and Deploy to GKE'
 
 on:
   push:
-    branches:
-      - develop
+    paths:
+      - 'src/the_haem_dream/ui/**'
+      - 'pyproject.toml'
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}

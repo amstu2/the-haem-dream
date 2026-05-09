@@ -35,8 +35,9 @@ name: 'Build Ray Train Image'
 
 on:
   push:
-    branches:
-      - develop
+    paths:
+      - 'src/the_haem_dream/training/**'
+      - 'pyproject.toml'
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
