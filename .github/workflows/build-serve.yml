@@ -100,7 +100,7 @@ jobs:
             --tag "${DOCKER_TAG}" \
             --build-arg GITHUB_SHA="${GITHUB_SHA}" \
             --build-arg GITHUB_REF="${GITHUB_REF}" \
-            -f ray-train/Dockerfile.serve \
+            -f ray-serve/Dockerfile.serve \
             .
 
           docker push "${DOCKER_TAG}"
