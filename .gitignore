@@ -221,3 +221,4 @@ data/*
 notebooks/run_config/*
 .vscode/*
 run_config/*
+dataset/*
