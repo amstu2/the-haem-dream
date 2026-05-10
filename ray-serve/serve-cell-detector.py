@@ -32,7 +32,7 @@ class CellDetectionModel:
         self.model.eval()
         self.preprocessor = transforms.Compose(
             [
-                transforms.Resize(os.environ["IMG_LENGTH"]),
+                transforms.Resize(int(os.environ["IMG_LENGTH"])),
                 transforms.ToTensor(),
             ]
         )
