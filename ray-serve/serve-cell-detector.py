@@ -49,6 +49,6 @@ class CellDetectionModel:
         return {"prediction": predicted_class}
 
 
-# 2: Bind and run the deployment locally
 app = CellDetectionModel.bind()
-serve.run(app)
+if __name__ == "__main__":
+    serve.run(app)
