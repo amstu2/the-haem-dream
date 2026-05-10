@@ -1,0 +1,14 @@
+FROM rayproject/ray:2.46.0-py311-gpu
+
+USER root
+
+WORKDIR /app
+
+
+COPY ray-train/requirements.txt .
+COPY ray-train/densenet.py .
+COPY ray-train/utils.py .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "densenet.py"]
