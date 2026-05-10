@@ -1,0 +1,74 @@
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: cell-detector
+spec:
+  serveConfigV2: |
+    applications:
+      - name: cell-detector
+        import_path: serve-cell-detector:app
+        deployments:
+          - name: CellDetectionModel
+            num_replicas: 1
+            ray_actor_options:
+              num_cpus: 4
+#              num_gpus: 1
+  rayClusterConfig:
+    rayVersion: "2.46.0"
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: "0.0.0.0"
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: us-central1-docker.pkg.dev/the-haem-dream/haem-artifacts/cell-detector
+              ports:
+                - containerPort: 6379
+                  name: gcs
+                - containerPort: 8265
+                  name: dashboard
+                - containerPort: 10001
+                  name: client
+                - containerPort: 8000
+                  name: serve
+              resources:
+                requests:
+                  cpu: "2"
+                  memory: "8Gi"
+                limits:
+                  cpu: "2"
+                  memory: "8Gi"
+              env:
+                - name: MLFLOW_TRACKING_URI
+                  value: "http://mlflow.mlflow.svc.cluster.local:5000"
+                - name: MODEL_URI
+                  value: "models:/cell-detection/production"
+                - name: IMG_LENGTH
+                  value: "368"
+    workerGroupSpecs:
+      - groupName: ray-workers
+        replicas: 1
+        minReplicas: 1
+        maxReplicas: 1
+        template:
+          spec:
+            containers:
+              - name: ray-worker
+                image: us-central1-docker.pkg.dev/the-haem-dream/haem-artifacts/cell-detector
+                resources:
+                  requests:
+                    cpu: "4"
+                    memory: "16Gi"
+                    #nvidia.com/gpu: "1"
+                  limits:
+                    cpu: "4"
+                    memory: "16Gi"
+                    #nvidia.com/gpu: "1"
+                env:
+                  - name: MODEL_URI
+                    value: "models:/cell-detection/production"
+                  - name: IMG_LENGTH
+                    value: "368"
+                  - name: MLFLOW_TRACKING_URI
+                    value: "http://mlflow.mlflow.svc.cluster.local:5000"
