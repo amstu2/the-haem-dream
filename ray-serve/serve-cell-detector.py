@@ -28,7 +28,7 @@ class CellDetectionModel:
             "Segmented Neutrophil": 12,
         }
         self.ID_TO_CLASS_MAP = {v: k for k, v in self.CLASS_TO_ID_MAP.items()}
-        self.model = mlflow.pytorch.load(os.environ["MODEL_URI"])
+        self.model = mlflow.pytorch.load_model(os.environ["MODEL_URI"])
         self.model.eval()
         self.preprocessor = transforms.Compose(
             [
