@@ -188,7 +188,7 @@ run_config_path = str(Path("run_config/").absolute())
 trainer = TorchTrainer(
     train_func,
     datasets={"train": train_ds, "test": test_ds},
-    scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=TRAIN_USE_GPU),
+    scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=False),
     run_config=RunConfig(storage_path=run_config_path),
     train_loop_config={
         "mflow_server_uri": MLFLOW_TRACKING_URI,
