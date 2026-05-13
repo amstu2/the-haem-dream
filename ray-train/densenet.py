@@ -136,7 +136,7 @@ def train_func(config):
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             if ray.train.get_context().get_world_rank() == 0:
-                torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
+                torch.save(model.module.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
         if ray.train.get_context().get_world_rank() == 0:
             mlflow.log_metrics({"loss": epoch_loss}, step=epoch)
