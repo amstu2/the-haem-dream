@@ -179,7 +179,7 @@ def train_func(config):
         macro_f1 = per_class_f1.mean().item()
         accuracy = (correct / total).item()
         mlflow.log_metrics({"accuracy": accuracy, "macro_f1": macro_f1})
-        mlflow.pytorch.log_model(model, "model")
+        mlflow.pytorch.log_model(model.module, "model")
         mlflow.end_run()
     ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
 
