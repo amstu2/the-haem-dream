@@ -7,11 +7,17 @@ import torch
 from PIL import Image
 from ray import serve
 from torchvision import transforms
+from utils import mlflow_server_alive
 
 
 @serve.deployment(num_replicas=1, ray_actor_options={"num_cpus": 4})
 class CellDetectionModel:
     def __init__(self):
+        if not mlflow_server_alive(MLFLOW_TRACKING_URI):
+            raise ConnectionError(
+                f"Can't connect to mlflow server ({MLFLOW_TRACKING_URI}- ending..."
+            )
+        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
         self.CLASS_TO_ID_MAP = {
             "Band Neutrophil": 0,
             "Basophil": 1,
