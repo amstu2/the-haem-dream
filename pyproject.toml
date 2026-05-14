@@ -20,4 +20,4 @@ ui = ["streamlit", "fastapi", "uvicorn"]
 training = ["torch", "torchvision", "ray[data,train]", "google-cloud-storage", "fsspec[full]", "mlflow-skinny"]
 
 [tool.uv]
-package = true
+package = false

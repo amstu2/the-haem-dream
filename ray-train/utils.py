@@ -30,7 +30,12 @@ def download_gcs_file(
 
 
 def unzip_file(zip_path: Path, extract_path: Path):
-    with zipfile.ZipFile(str(zip_path), "r") as zip_ref:
-        zip_ref.extractall(extract_path)
+    with zipfile.ZipFile(str(zip_path), "r") as f:
+        for member in f.infolist():
+            target = extract_path / member.filename.rstrip("/")
+            if member.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+            elif not target.exists():
+                f.extract(member, extract_path)
 
     print(f"File {zip_path} extracted to {extract_path}")

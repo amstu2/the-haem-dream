@@ -36,7 +36,9 @@ name: 'Build Ray Serve Image'
 on:
   push:
     paths:
-      - 'ray-serve/**'
+      - 'ray-serve/Dockerfile.serve'
+      - 'ray-serve/requirements.txt'
+      - 'ray-serve/serve-cell-detector.py'
       - 'pyproject.toml'
 
 env:

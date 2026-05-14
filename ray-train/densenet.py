@@ -26,7 +26,7 @@ PROBABILITY_HORI_FLIP = float(os.getenv("PROBABILITY_HORI_FLIP", 0.5))
 PROBABILITY_BRIGHTNESS = float(os.getenv("PROBABILITY_BRIGHTNESS", 0.2))
 PROBABILITY_CONTRAST = float(os.getenv("PROBABILITY_CONTRAST", 0.2))
 TRAIN_NUM_WORKERS = int(os.getenv("TRAIN_NUM_WORKERS", 2))
-TRAIN_USE_GPU = bool(os.getenv("TRAIN_USE_GPU", True))
+TRAIN_USE_GPU = bool(os.getenv("TRAIN_USE_GPU", False))
 SEED = int(os.getenv("TRAIN_SEED", 42))
 TRUNCATE_DATASET = bool(os.getenv("TRUNCATE_DATASET", False))
 
@@ -136,7 +136,7 @@ def train_func(config):
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             if ray.train.get_context().get_world_rank() == 0:
-                torch.save(model.state_dict(), f"{checkpoint_dir}/model.pth")
+                torch.save(model.module.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
         if ray.train.get_context().get_world_rank() == 0:
             mlflow.log_metrics({"loss": epoch_loss}, step=epoch)
@@ -179,7 +179,7 @@ def train_func(config):
         macro_f1 = per_class_f1.mean().item()
         accuracy = (correct / total).item()
         mlflow.log_metrics({"accuracy": accuracy, "macro_f1": macro_f1})
-        mlflow.pytorch.log_model(model, "model")
+        mlflow.pytorch.log_model(model.module, "model")
         mlflow.end_run()
     ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
 
