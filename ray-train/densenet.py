@@ -26,7 +26,7 @@ PROBABILITY_HORI_FLIP = float(os.getenv("PROBABILITY_HORI_FLIP", 0.5))
 PROBABILITY_BRIGHTNESS = float(os.getenv("PROBABILITY_BRIGHTNESS", 0.2))
 PROBABILITY_CONTRAST = float(os.getenv("PROBABILITY_CONTRAST", 0.2))
 TRAIN_NUM_WORKERS = int(os.getenv("TRAIN_NUM_WORKERS", 2))
-TRAIN_USE_GPU = bool(os.getenv("TRAIN_USE_GPU", True))
+TRAIN_USE_GPU = bool(os.getenv("TRAIN_USE_GPU", False))
 SEED = int(os.getenv("TRAIN_SEED", 42))
 TRUNCATE_DATASET = bool(os.getenv("TRUNCATE_DATASET", False))
 
@@ -188,7 +188,7 @@ run_config_path = str(Path("run_config/").absolute())
 trainer = TorchTrainer(
     train_func,
     datasets={"train": train_ds, "test": test_ds},
-    scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=False),
+    scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=TRAIN_USE_GPU),
     run_config=RunConfig(storage_path=run_config_path),
     train_loop_config={
         "mflow_server_uri": MLFLOW_TRACKING_URI,
