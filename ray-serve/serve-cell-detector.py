@@ -2,7 +2,6 @@ import os
 from io import BytesIO
 
 import mlflow
-import starlette
 import torch
 from fastapi import FastAPI, UploadFile
 from PIL import Image
