@@ -36,7 +36,9 @@ name: 'Build and Deploy UI'
 on:
   push:
     paths:
-      - 'src/the_haem_dream/ui/**'
+      - 'ui/requirements.txt'
+      - 'ui/st-app.py'
+      - 'ui/Dockerfile'
       - 'pyproject.toml'
 
 env:
@@ -100,7 +102,7 @@ jobs:
             --tag "${DOCKER_TAG}" \
             --build-arg GITHUB_SHA="${GITHUB_SHA}" \
             --build-arg GITHUB_REF="${GITHUB_REF}" \
-            -f ui/Dockerfile \
+            -f ui/Dockerfile.ui \
             ui/
 
           docker push "${DOCKER_TAG}"

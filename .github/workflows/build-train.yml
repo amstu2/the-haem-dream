@@ -36,7 +36,10 @@ name: 'Build Ray Train Image'
 on:
   push:
     paths:
-      - 'ray-train/**'
+      - 'ray-train/densenet.py'
+      - 'ray-train/requirements.txt'
+      - 'ray-train/utils.py'
+      - 'ray-train/Dockerfile.train'
       - 'pyproject.toml'
 
 env:
