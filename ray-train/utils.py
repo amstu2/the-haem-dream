@@ -39,12 +39,3 @@ def unzip_file(zip_path: Path, extract_path: Path):
                 f.extract(member, extract_path)
 
     print(f"File {zip_path} extracted to {extract_path}")
-
-
-def initialise_worker_datasets():
-    zip_path = Path("./pbc_dataset.zip")
-    if not zip_path.exists():
-        download_gcs_file(
-            "the-haem-dream", "cell-dataset/pbc_dataset.zip", str(zip_path)
-        )
-    unzip_file(zip_path, Path("./"))

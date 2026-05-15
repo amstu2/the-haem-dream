@@ -15,7 +15,6 @@ from torchvision import transforms
 from torchvision.models import densenet121
 from utils import (
     download_gcs_file,
-    initialise_worker_datasets,
     mlflow_server_alive,
     unzip_file,
 )
@@ -39,6 +38,32 @@ if not mlflow_server_alive(MLFLOW_TRACKING_URI):
     raise ConnectionError(
         f"Can't connect to mlflow server ({MLFLOW_TRACKING_URI}- ending..."
     )
+
+
+def initialise_worker_datasets():
+    # This needs to be self contained for worker setup hook
+    # TODO: Refactor, there is dataset setup logic for the head as well
+    # This is a quick fix
+    import zipfile
+    from pathlib import Path
+
+    from google.cloud import storage
+
+    zip_path = Path("./pbc_dataset.zip")
+    if not zip_path.exists():
+        client = storage.Client()
+        bucket = client.bucket("the-haem-dream")
+        blob = bucket.blob("cell-dataset/pbc_dataset.zip")
+        blob.download_to_filename(str(zip_path))
+
+    with zipfile.ZipFile(str(zip_path), "r") as f:
+        for member in f.infolist():
+            target = Path("./") / member.filename.rstrip("/")
+            if member.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+            elif not target.exists():
+                f.extract(member, Path("./"))
+
 
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_dataset.zip", "./pbc_dataset.zip")
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_meta.csv", "./pbc_meta.csv")
