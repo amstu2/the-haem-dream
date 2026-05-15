@@ -13,12 +13,13 @@ from ray.train import Checkpoint, RunConfig, ScalingConfig
 from ray.train.torch import TorchTrainer
 from torchvision import transforms
 from torchvision.models import densenet121
-from utils import download_gcs_file, mlflow_server_alive, unzip_file
+from utils import (
+    download_gcs_file,
+    initialise_worker_datasets,
+    mlflow_server_alive,
+    unzip_file,
+)
 
-MLFLOW_TRACKING_URI = os.environ["MLFLOW_TRACKING_URI"]
-TRAIN_LEARNING_RATE = float(os.environ["TRAIN_LEARNING_RATE"])
-BATCH_SIZE = int(os.environ["BATCH_SIZE"])
-EPOCHS = int(os.environ["EPOCHS"])
 
 IMG_LENGTH = int(os.getenv("IMG_LENGTH", 368))
 PROBABILITY_VERT_FLIP = float(os.getenv("PROBABILITY_VERT_FLIP", 0.5))
@@ -39,6 +40,8 @@ download_gcs_file("the-haem-dream", "cell-dataset/pbc_dataset.zip", "./pbc_datas
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_meta.csv", "./pbc_meta.csv")
 
 unzip_file(Path("./pbc_dataset.zip"), Path("./"))
+
+ray.init(runtime_env={"worker_process_setup_hook": initialise_worker_datasets})
 
 pbc_base_path = Path("./dataset/").resolve()
 train_root = pbc_base_path / "train"
@@ -62,10 +65,6 @@ if TRUNCATE_DATASET:  # For debugging
 
 def train_func(config):
     # TODO: Switch to GCS native storage
-    download_gcs_file(
-        "the-haem-dream", "cell-dataset/pbc_dataset.zip", "./pbc_dataset.zip"
-    )
-    unzip_file(Path("./pbc_dataset.zip"), Path("./"))
     if ray.train.get_context().get_world_rank() == 0:
         mlflow.set_tracking_uri(config["mflow_server_uri"])
         mlflow.set_experiment("cell-detection")
