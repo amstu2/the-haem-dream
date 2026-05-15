@@ -20,6 +20,10 @@ from utils import (
     unzip_file,
 )
 
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+TRAIN_LEARNING_RATE = float(os.getenv("TRAIN_LEARNING_RATE", 0.001))
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", 16))
+EPOCHS = int(os.getenv("EPOCHS", 10))
 
 IMG_LENGTH = int(os.getenv("IMG_LENGTH", 368))
 PROBABILITY_VERT_FLIP = float(os.getenv("PROBABILITY_VERT_FLIP", 0.5))
