@@ -164,7 +164,8 @@ def train_func(config):
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             if ray.train.get_context().get_world_rank() == 0:
-                torch.save(model.module.state_dict(), f"{checkpoint_dir}/model.pth")
+                formatted_model = model.module if hasattr(model, "module") else model
+                torch.save(formatted_model.state_dict(), f"{checkpoint_dir}/model.pth")
                 checkpoint = Checkpoint.from_directory(checkpoint_dir)
         if ray.train.get_context().get_world_rank() == 0:
             mlflow.log_metrics({"loss": epoch_loss}, step=epoch)
@@ -207,7 +208,8 @@ def train_func(config):
         macro_f1 = per_class_f1.mean().item()
         accuracy = (correct / total).item()
         mlflow.log_metrics({"accuracy": accuracy, "macro_f1": macro_f1})
-        mlflow.pytorch.log_model(model.module, "model")
+        formatted_model = model.module if hasattr(model, "module") else model
+        mlflow.pytorch.log_model(formatted_model, "model")
         mlflow.end_run()
     ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
 
