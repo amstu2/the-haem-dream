@@ -214,12 +214,11 @@ def train_func(config):
     ray.train.report({"accuracy": accuracy, "macro_f1": macro_f1})
 
 
-run_config_path = str(Path("run_config/").absolute())
 trainer = TorchTrainer(
     train_func,
     datasets={"train": train_ds, "test": test_ds},
     scaling_config=ScalingConfig(num_workers=TRAIN_NUM_WORKERS, use_gpu=TRAIN_USE_GPU),
-    run_config=RunConfig(storage_path=run_config_path),
+    run_config=RunConfig(storage_path="gs://the-haem-dream/cell-detector-run-config"),
     train_loop_config={
         "mflow_server_uri": MLFLOW_TRACKING_URI,
         "lr": TRAIN_LEARNING_RATE,
