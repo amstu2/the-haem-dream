@@ -50,7 +50,9 @@ def initialise_worker_datasets():
     from google.cloud import storage
 
     zip_path = Path("./pbc_dataset.zip")
-    if not zip_path.exists():
+    zip_exists = zip_path.exists()
+    is_zip_file = zip_path.exists() and not zipfile.is_zipfile(str(zip_path))
+    if (not zip_exists) or (not is_zip_file):
         client = storage.Client()
         bucket = client.bucket("the-haem-dream")
         blob = bucket.blob("cell-dataset/pbc_dataset.zip")
