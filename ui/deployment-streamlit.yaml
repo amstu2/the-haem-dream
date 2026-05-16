@@ -31,6 +31,9 @@ spec:
       containers:
       - name: streamlit-ui
         image: IMAGE
+        env:
+          - name: MODEL_SERVER_URL
+            value: "http://cell-detector.ray-serve:8000/infer"
         ports:
           - containerPort: 8501
         resources:
