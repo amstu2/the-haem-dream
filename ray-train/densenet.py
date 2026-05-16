@@ -23,6 +23,9 @@ MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 TRAIN_LEARNING_RATE = float(os.getenv("TRAIN_LEARNING_RATE", 0.001))
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", 16))
 EPOCHS = int(os.getenv("EPOCHS", 10))
+DATASET_BASE_PATH = os.getenv(
+    "DATASET_BASE_PATH", "gs://the-haem-dream/cell-dataset/extracted/dataset/"
+)
 
 IMG_LENGTH = int(os.getenv("IMG_LENGTH", 368))
 PROBABILITY_VERT_FLIP = float(os.getenv("PROBABILITY_VERT_FLIP", 0.5))
@@ -40,43 +43,14 @@ if not mlflow_server_alive(MLFLOW_TRACKING_URI):
     )
 
 
-def initialise_worker_datasets():
-    # This needs to be self contained for worker setup hook
-    # TODO: Refactor, there is dataset setup logic for the head as well
-    # This is a quick fix
-    import zipfile
-    from pathlib import Path
-
-    from google.cloud import storage
-
-    zip_path = Path("./pbc_dataset.zip")
-    zip_exists = zip_path.exists()
-    is_zip_file = zip_path.exists() and not zipfile.is_zipfile(str(zip_path))
-    if (not zip_exists) or (not is_zip_file):
-        client = storage.Client()
-        bucket = client.bucket("the-haem-dream")
-        blob = bucket.blob("cell-dataset/pbc_dataset.zip")
-        blob.download_to_filename(str(zip_path))
-
-    with zipfile.ZipFile(str(zip_path), "r") as f:
-        for member in f.infolist():
-            target = Path("./") / member.filename.rstrip("/")
-            if member.is_dir():
-                target.mkdir(parents=True, exist_ok=True)
-            elif not target.exists():
-                f.extract(member, Path("./"))
-
-
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_dataset.zip", "./pbc_dataset.zip")
 download_gcs_file("the-haem-dream", "cell-dataset/pbc_meta.csv", "./pbc_meta.csv")
 
 unzip_file(Path("./pbc_dataset.zip"), Path("./"))
 
-ray.init(runtime_env={"worker_process_setup_hook": initialise_worker_datasets})
 
-pbc_base_path = Path("./dataset/").resolve()
-train_root = pbc_base_path / "train"
-test_root = pbc_base_path / "test"
+train_root = DATASET_BASE_PATH + "train"
+test_root = DATASET_BASE_PATH + "test"
 train_partitioning = Partitioning("dir", field_names=["class"], base_dir=train_root)
 test_partitioning = Partitioning("dir", field_names=["class"], base_dir=test_root)
 train_ds = ray.data.read_images(
