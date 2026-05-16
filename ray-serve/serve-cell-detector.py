@@ -26,7 +26,7 @@ class CellDetectionModel:
         MLFLOW_TRACKING_URI = os.environ["MLFLOW_TRACKING_URI"]
         if not mlflow_server_alive(MLFLOW_TRACKING_URI):
             raise ConnectionError(
-                f"Can't connect to mlflow server ({MLFLOW_TRACKING_URI}- ending..."
+                f"Can't connect to mlflow server ({MLFLOW_TRACKING_URI}) - ending..."
             )
         mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
         self.CLASS_TO_ID_MAP = {
