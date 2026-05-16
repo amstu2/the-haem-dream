@@ -36,9 +36,7 @@ name: 'Build and Deploy UI'
 on:
   push:
     paths:
-      - 'ui/requirements.txt'
-      - 'ui/st-app.py'
-      - 'ui/Dockerfile.ui'
+      - 'ui/**'
       - 'pyproject.toml'
 
 env:
