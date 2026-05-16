@@ -108,4 +108,4 @@ jobs:
             -f ray-train/Dockerfile.train \
             .
 
-          docker push "${DOCKER_TAG}"
+          docker push --all-tags "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}"
