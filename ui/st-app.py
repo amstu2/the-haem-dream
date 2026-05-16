@@ -30,4 +30,4 @@ if st.button("Run Inference"):
         if response.status_code == 200:
             st.write("Results:", response.json())
         else:
-            st.error(f"ERORR: {response.content}")
+            st.error(f"ERROR: {response.content}")
