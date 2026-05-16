@@ -97,12 +97,14 @@ jobs:
       - name: 'Build and push Docker container'
         run: |-
           DOCKER_TAG="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:${GITHUB_SHA}"
+          LATEST_TAG="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:latest"
 
           docker build \
             --tag "${DOCKER_TAG}" \
+            --tag "${LATEST_TAG}" \
             --build-arg GITHUB_SHA="${GITHUB_SHA}" \
             --build-arg GITHUB_REF="${GITHUB_REF}" \
             -f ray-serve/Dockerfile.serve \
             .
 
-          docker push "${DOCKER_TAG}"
+          docker push --all-tags "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}"
