@@ -38,7 +38,7 @@ on:
     paths:
       - 'ui/requirements.txt'
       - 'ui/st-app.py'
-      - 'ui/Dockerfile'
+      - 'ui/Dockerfile.ui'
       - 'pyproject.toml'
 
 env:
@@ -97,22 +97,22 @@ jobs:
       - name: 'Build and push Docker container'
         run: |-
           DOCKER_TAG="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:${GITHUB_SHA}"
-
+          LATEST_TAG="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}:latest"
           docker build \
             --tag "${DOCKER_TAG}" \
             --build-arg GITHUB_SHA="${GITHUB_SHA}" \
             --build-arg GITHUB_REF="${GITHUB_REF}" \
             -f ui/Dockerfile.ui \
-            ui/
+            .
 
-          docker push "${DOCKER_TAG}"
+          docker push --all-tags "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE}"
 
       # Deploy the Docker image to the GKE cluster
       - name: 'Deploy to GKE'
         run: |-
           # Update the image in the deployment
           kubectl set image deployment/streamlit-ui \
-            streamlit-ui=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA \
+            streamlit-ui=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:latest \
             -n prod
           kubectl rollout status deployment/streamlit-ui -n prod
           kubectl get services -o wide -n prod
