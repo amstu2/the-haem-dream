@@ -18,13 +18,13 @@ if cell_image:
 if st.button("Run Inference"):
     buf = io.BytesIO()
     if image is not None:
-        image.save(buf, format="jpg")
+        image.save(buf, format="jpeg")
 
         img_bytes = buf.getvalue()
 
         response = requests.post(
             MODEL_SERVER_URL,  # "http://cell-detector.ray-serve:8000/infer"
-            files={"file": ("image.jpg", img_bytes, "image/jpeg")},
+            files={"file": ("image.jpeg", img_bytes, "image/jpeg")},
         )
 
         if response.status_code == 200:
