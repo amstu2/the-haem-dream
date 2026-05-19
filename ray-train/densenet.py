@@ -123,6 +123,8 @@ def train_func(config):
     model.train()
     best_loss = 1e8
     for epoch in range(config["epochs"]):
+        batch_loss = 0.0
+        batch_count = 0
         for batch in train_dataloader:
             classes = batch["class"]
             images = batch["image"] / 255.0
@@ -135,8 +137,11 @@ def train_func(config):
             loss.backward()
             optimizer.step()
 
+            batch_loss += loss.item()
+            batch_count += 1
+
         checkpoint = None
-        epoch_loss = loss.item()
+        epoch_loss = batch_loss / batch_count
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             if ray.train.get_context().get_world_rank() == 0:
