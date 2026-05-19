@@ -33,9 +33,9 @@ PROBABILITY_HORI_FLIP = float(os.getenv("PROBABILITY_HORI_FLIP", 0.5))
 PROBABILITY_BRIGHTNESS = float(os.getenv("PROBABILITY_BRIGHTNESS", 0.2))
 PROBABILITY_CONTRAST = float(os.getenv("PROBABILITY_CONTRAST", 0.2))
 TRAIN_NUM_WORKERS = int(os.getenv("TRAIN_NUM_WORKERS", 2))
-TRAIN_USE_GPU = bool(os.getenv("TRAIN_USE_GPU", False))
+TRAIN_USE_GPU = os.getenv("TRAIN_USE_GPU", "False").lower() == "true"
 SEED = int(os.getenv("TRAIN_SEED", 42))
-TRUNCATE_DATASET = bool(os.getenv("TRUNCATE_DATASET", False))
+TRUNCATE_DATASET = os.getenv("TRUNCATE_DATASET", "False").lower() == "true"
 
 if not mlflow_server_alive(MLFLOW_TRACKING_URI):
     raise ConnectionError(
