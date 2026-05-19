@@ -100,6 +100,8 @@ def train_func(config):
         batch_size=config["batch_size"],
         dtypes={"image": torch.uint8, "class": torch.int64},
         device=device,
+        local_shuffle_buffer_size=config["batch_size"]
+        * 4,  # Hopefully should fit on 16Gi RAM
     )
 
     test_dataloader = test_data_shard.iter_torch_batches(
