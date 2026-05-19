@@ -62,7 +62,7 @@ test_ds = ray.data.read_images(
 
 encoder = LabelEncoder(label_column="class")
 train_ds = encoder.fit_transform(train_ds)
-test_ds = encoder.fit_transform(test_ds)
+test_ds = encoder.transform(test_ds)
 if TRUNCATE_DATASET:  # For debugging
     train_ds = train_ds.limit(100)
     test_ds = test_ds.limit(10)
