@@ -99,14 +99,6 @@ def train_func(config):
         ]
     )
 
-    train_dataloader = train_data_shard.iter_torch_batches(
-        batch_size=config["batch_size"],
-        dtypes={"image": torch.uint8, "class": torch.int64},
-        device=device,
-        local_shuffle_buffer_size=config["batch_size"]
-        * 4,  # Hopefully should fit on 16Gi RAM
-    )
-
     test_dataloader = test_data_shard.iter_torch_batches(
         batch_size=config["batch_size"],
         dtypes={"image": torch.uint8, "class": torch.int64},
@@ -130,7 +122,13 @@ def train_func(config):
     for epoch in range(config["epochs"]):
         batch_loss = 0.0
         batch_count = 0
-        for batch in train_dataloader:
+        for batch in train_data_shard.iter_torch_batches(
+            batch_size=config["batch_size"],
+            dtypes={"image": torch.uint8, "class": torch.int64},
+            device=device,
+            local_shuffle_buffer_size=config["batch_size"]
+            * 4,  # Hopefully should fit on 16Gi RAM
+        ):
             classes = batch["class"]
             images = batch["image"] / 255.0
             images = images.permute(0, 3, 1, 2)
