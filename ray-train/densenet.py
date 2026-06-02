@@ -85,6 +85,9 @@ def train_func(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device {'cuda' if torch.cuda.is_available() else 'cpu'}")
 
+    normalise = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+    )  # https://pytorch.org/hub/pytorch_vision_densenet/
     transformations = transforms.Compose(
         [
             # transforms.ToTensor(),
@@ -93,9 +96,7 @@ def train_func(config):
             transforms.ColorJitter(
                 brightness=config["prob_brightness"], contrast=config["prob_contrast"]
             ),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-            ),  # https://pytorch.org/hub/pytorch_vision_densenet/
+            normalise,
         ]
     )
 
@@ -167,6 +168,7 @@ def train_func(config):
             classes = batch["class"]
             images = batch["image"] / 255.0
             images = images.permute(0, 3, 1, 2)
+            images = normalise(images)
 
             outputs = model(images).argmax(1)
 
