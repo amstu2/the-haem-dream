@@ -2,7 +2,7 @@
 
 ## Motivation
 
-A tedious process in haematology pathology labratories is viewing blood films and laborously looking through a microscope to find anomolous cells and features that could indicate pathology. AI/ML techniques have been applied to automate this process, however, whole slide imagary (WSI) analysis is still in its infancy. Google's MedGemma 1.5 4B [Technical Report](https://arxiv.org/pdf/2604.05081) was released in May 2026 and has been improved over the original version by including WSI in its training set. However, from experimentation, MedGemma is not able to classify haemotological disease, possibly due to only training on anatomical pathology specimens, which do not require the same degree of magnification. Given haematology pathology requires higher magnification, more image samples are required to make a diagnostic conclusion, thus, a vision LLM may not be suited for this task.
+A tedious process in haematology pathology labratories is viewing blood films and laborously looking through a microscope to find anomolous cells and features that could indicate pathology. AI/ML techniques have been applied to automate this process, however, whole slide imagary (WSI) analysis is still in its infancy. Google's MedGemma 1.5 4B [Technical Report](https://arxiv.org/pdf/2604.05081) was released in January 2026 and has been improved over the original version by including WSI in its training set. However, from experimentation, MedGemma is not able to classify haemotological disease, possibly due to only training on anatomical pathology specimens, which do not require the same degree of magnification. Given haematology pathology requires higher magnification, more image samples are required to make a diagnostic conclusion, thus, a vision LLM may not be suited for this task.
 
 This project aims to explore different approaches to this problem. As an initial exploration,
 [Yarikan et al. 2026: A Large-Scale Peripheral Blood Cell Dataset for Automated Hematological Analysis](https://www.nature.com/articles/s41597-026-06761-y) recently released a large scale blood cell data image dataset, which would be used to identify anomoulous cells. The dataset is high quality (Cohen’s kappa >0.85 for all classes) and available via [Zenodo](https://zenodo.org/records/17333317). A small model such as DenseNet-121 (~8M paramaters), which was outlined in the paper as the highest performing, may be well suited for such a computationally expensive pass. Results from these classifications could be aggregated and passed to a larger vision language model operating at a lower magnification.
@@ -23,23 +23,18 @@ Each folder contains code, dockerfiles and manifests for their respective compon
 
 * MLflow and postgresDB instances deployed via helm chart with correct Secrets, SAs etc.
     * Mlflow uses Google Cloud Storage as a backend for artifact storage
-* Ray training code is running and will train a Densenet-121 model. Tested with TRUNCATE_DATASET variable set, so evaluation performance is still not known.
-    * Model performance and checkpoints are logged following run - works locally but not in cloud.
+* Ray training code is running and will train a Densenet-121 model.
     * Variations from paper:
         * Cell images were altered as per common computer vision training tasks
             * Brightness, contrast variations common according to SME
             * Flipped to generalise cell structure
             * AdamW optimizer used over Adam
 * Streamlit UI is deployed into production namespace
-* CI/CD implemented via Github Actions to build ray train, ray serve and Streamlit UI images, as well autonomously deploy the streamlit image on build.
+* CI/CD implemented via Github Actions to build ray train, ray serve and Streamlit UI images, as well as autonomously deploying the streamlit image on build.
 * Appropriate role bindings for each deployment, GCS/GAR work as expected
 
 ### What is not working?
-* Could not request GPUs on GKE's Autopilot cluster - request for 2x NVIDIA L4s was rejected by Google.
-    * Train manifest GPU requests are commented out.
-* Ray serve code not yet tested
-* Streamlit UI still basic and not tested
-* Ray train does not correctly log model artifacts
+* Streamlit UI is bare-bones and needs polish
 
 ## Version History
 * v1.0.0 was released for ML engineering job application deadline
