@@ -221,4 +221,6 @@ data/*
 notebooks/run_config/*
 .vscode/*
 run_config/*
-dataset/*
+**/dataset/*
+**/pbc_meta.csv
+**/pbc_dataset.zip
